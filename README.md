@@ -1,9 +1,11 @@
 # diffxlsx
 diff two text files and output into xlsx spreadsheet
 
-# usage: diffxlsx fromfile tofile output.xlsx
+# usage
 
 ```
+Usage: diffxlsx fromfile tofile output.xlsx
+
 Options: 
   -h, --help            show this help message and exit
   -l LINES, --lines=LINES
