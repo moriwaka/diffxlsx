@@ -1,16 +1,15 @@
 #!/usr/bin/python
 
-import sys, os, difflib, optparse
+import sys, difflib, optparse
 from openpyxl import Workbook
 
 def main():
     usage = "usage: %prog fromfile tofile output.xlsx"
-    
+
     parser = optparse.OptionParser(usage)
     parser.add_option("-l", "--lines", type="int", default=2,
                       help='Set number of context lines (default 2)')
     (options, args) = parser.parse_args()
-
 
     if len(args) == 0:
         parser.print_help()
@@ -18,21 +17,17 @@ def main():
     if len(args) != 3:
         parser.error("need to specify both a fromfile, tofile, and output.xlsx")
 
-
     n = options.lines
     fromfile, tofile, outfile = args
 
     fromlines = open(fromfile, 'U').readlines()
     tolines = open(tofile, 'U').readlines()
 
-    diff = ""
-
     sm = difflib.SequenceMatcher(None, fromlines, tolines)
     all_ops = sm.get_grouped_opcodes(n)
 
     wb = Workbook()
     ws = wb.active
-
     row = 1
     for group in all_ops:
         (i, j, k, l) = (0, 0, 0, 0)
@@ -45,12 +40,11 @@ def main():
                 k = tmp_k
             l = tmp_l
         cell = ws.cell(row=row, column=1)
-        cell.value = str.join('',fromlines[i:j])
+        cell.value = str.join('', fromlines[i:j])
         cell = ws.cell(row=row, column=2)
-        cell.value = str.join('',tolines[k:l])
+        cell.value = str.join('', tolines[k:l])
         row += 1
-
     wb.save(outfile)
-            
+
 if __name__ == '__main__':
     main()
