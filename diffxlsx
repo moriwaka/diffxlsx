@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, difflib, optparse
+import sys, difflib, optparse, os.path
 from openpyxl import Workbook
 
 def diff_a_file(fromfile, tofile, ws, row):
@@ -48,16 +48,44 @@ def main():
         sys.exit(1)
     if len(args) != 3:
         parser.error("need to specify both a fromfile, tofile, and output.xlsx")
-
     global n
     n = options.lines
+
     fromfile, tofile, outfile = args
+    if os.path.isdir(fromfile) and os.path.isdir(tofile):
+        multiple = True
+    else:
+        multiple = False
 
     wb = Workbook()
     ws = wb.active
-    row = 1
 
-    row = diff_a_file(fromfile, tofile, ws, row)
+    # styles
+    ws['A1'] = 'filename'
+    ws['B1'] = 'before'
+    ws['C1'] = 'after'
+    ws['D1'] = 'comment'
+    
+    ws.column_dimensions['A'].width = 20
+    ws.column_dimensions['B'].width = 60
+    ws.column_dimensions['C'].width = 60
+    ws.column_dimensions['D'].width = 30
+
+    row = 2
+
+    if multiple:                # compare directories
+        import filecmp
+        dcmp = filecmp.dircmp(fromfile, tofile)
+        if dcmp.right_only or dcmp.left_only:
+            dcmp.report()
+            print "make diffs about common files only"
+        flist = sorted(dcmp.common_files)
+
+        for fname in flist:
+            row = diff_a_file(fromfile + '/' + fname ,
+                              tofile + '/' + fname, ws, row)
+    else:                       # compare one file
+        row = diff_a_file(fromfile, tofile, ws, row)
     
     wb.save(outfile)
 
