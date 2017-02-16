@@ -29,9 +29,9 @@ def diff_a_file(fromfile, tofile, ws, row):
         cell = ws.cell(row=row, column=2)
         cell.value = i 
         cell = ws.cell(row=row, column=3)
-        cell.value = str.join('', fromlines[i:j])
+        cell.value = str.join('', fromlines[i:j]).rstrip('\n')
         cell = ws.cell(row=row, column=4)
-        cell.value = str.join('', tolines[k:l])
+        cell.value = str.join('', tolines[k:l]).rstrip('\n')
         row += 1
     return row
 
@@ -63,13 +63,14 @@ def main():
     wb = Workbook()
     ws = wb.active
 
-    # styles
+    # headers
     ws['A1'] = 'filename'
     ws['B1'] = 'line number'
     ws['C1'] = 'before'
     ws['D1'] = 'after'
     ws['E1'] = 'comment'
     
+    # styles
     ws.column_dimensions['A'].width = 60
     ws.column_dimensions['B'].width = 20
     ws.column_dimensions['C'].width = 60
