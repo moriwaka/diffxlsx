@@ -10,6 +10,7 @@ def diff_a_file(fromfile, tofile, ws, row):
     tolines = open(tofile, 'U').readlines()
 
     sm = difflib.SequenceMatcher(None, fromlines, tolines)
+    global n
     all_ops = sm.get_grouped_opcodes(n)
 
     for group in all_ops:
@@ -26,8 +27,10 @@ def diff_a_file(fromfile, tofile, ws, row):
         cell = ws.cell(row=row, column=1)
         cell.value = fromfile
         cell = ws.cell(row=row, column=2)
-        cell.value = str.join('', fromlines[i:j])
+        cell.value = i 
         cell = ws.cell(row=row, column=3)
+        cell.value = str.join('', fromlines[i:j])
+        cell = ws.cell(row=row, column=4)
         cell.value = str.join('', tolines[k:l])
         row += 1
     return row
@@ -62,14 +65,16 @@ def main():
 
     # styles
     ws['A1'] = 'filename'
-    ws['B1'] = 'before'
-    ws['C1'] = 'after'
-    ws['D1'] = 'comment'
+    ws['B1'] = 'line number'
+    ws['C1'] = 'before'
+    ws['D1'] = 'after'
+    ws['E1'] = 'comment'
     
-    ws.column_dimensions['A'].width = 20
-    ws.column_dimensions['B'].width = 60
+    ws.column_dimensions['A'].width = 60
+    ws.column_dimensions['B'].width = 20
     ws.column_dimensions['C'].width = 60
-    ws.column_dimensions['D'].width = 30
+    ws.column_dimensions['D'].width = 60
+    ws.column_dimensions['E'].width = 30
 
     row = 2
 
