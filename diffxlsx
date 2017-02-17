@@ -3,15 +3,18 @@
 import sys, difflib, optparse, os.path
 from openpyxl import Workbook
 
-def diff_a_file(fromfile, tofile, ws, row):
+def diff_a_file(fromfile, tofile, ws, row, options):
     """ compare one file and add rows after row number """
 
     fromlines = open(fromfile, 'U').readlines()
     tolines = open(tofile, 'U').readlines()
+    reflines = ""
+    if options.refdirname != "":
+        with open(options.refdirname + "/" + os.path.basename(fromfile)) as reffile:
+            reflines = reffile.readlines()
 
     sm = difflib.SequenceMatcher(None, fromlines, tolines)
-    global n
-    all_ops = sm.get_grouped_opcodes(n)
+    all_ops = sm.get_grouped_opcodes(options.lines)
 
     for group in all_ops:
         (i, j, k, l) = (0, 0, 0, 0)
@@ -32,6 +35,8 @@ def diff_a_file(fromfile, tofile, ws, row):
         cell.value = str.join('', fromlines[i:j]).rstrip('\n')
         cell = ws.cell(row=row, column=4)
         cell.value = str.join('', tolines[k:l]).rstrip('\n')
+        cell = ws.cell(row=row, column=5)
+        cell.value = str.join('', reflines[i:j]).rstrip('\n')
         row += 1
     return row
 
@@ -39,11 +44,13 @@ def diff_a_file(fromfile, tofile, ws, row):
 
 
 def main():
-    usage = "usage: %prog fromfile tofile output.xlsx"
+    usage = "usage: %prog [options] fromfile tofile output.xlsx"
 
     parser = optparse.OptionParser(usage)
-    parser.add_option("-l", "--lines", type="int", default=0,
+    parser.add_option("-l", "--lines", type="int", default=0, dest="lines",
                       help='Set number of context lines (default 0)')
+    parser.add_option("-r", "--referencedir", type="string", default="", dest="refdirname",
+                      help='Directory name for reference content (generate comments from same name file&lines in this directory)')
     (options, args) = parser.parse_args()
 
     if len(args) == 0:
@@ -51,8 +58,6 @@ def main():
         sys.exit(1)
     if len(args) != 3:
         parser.error("need to specify both a fromfile, tofile, and output.xlsx")
-    global n
-    n = options.lines
 
     fromfile, tofile, outfile = args
     if os.path.isdir(fromfile) and os.path.isdir(tofile):
@@ -89,9 +94,10 @@ def main():
 
         for fname in flist:
             row = diff_a_file(fromfile + '/' + fname ,
-                              tofile + '/' + fname, ws, row)
+                              tofile + '/' + fname, 
+                              ws, row, options)
     else:                       # compare one file
-        row = diff_a_file(fromfile, tofile, ws, row)
+        row = diff_a_file(fromfile, tofile, ws, row, options)
     
     wb.save(outfile)
 
